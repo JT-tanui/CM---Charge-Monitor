@@ -1,15 +1,18 @@
 # Battery Notifier
+## Description
 
-Battery Notifier is a Windows application that monitors your laptop's battery level and notifies you when it reaches a specified threshold. The application runs in the system tray and provides customizable notifications.
+Battery Notifier is a lightweight Windows application designed to help you manage your laptop's battery life more effectively. By monitoring the battery percentage and power status, the application provides timely notifications when your battery reaches a user-defined threshold. This helps prevent overcharging and extends the overall lifespan of your battery.
 
-## Features
+The application runs quietly in the system tray, ensuring it doesn't interfere with your workflow. You can customize the battery threshold and notification settings to suit your needs. Additionally, Battery Notifier supports custom notification sounds, allowing you to choose an alert that best grabs your attention.
 
-- Monitors battery percentage and power status
+Key features include:
+- Real-time battery monitoring
 - Customizable battery threshold for notifications
-- Plays a custom sound when the battery threshold is reached
-- Runs in the system tray
-- Toggle notifications on/off
-- Context menu for easy access to settings and exit options
+- Custom notification sounds
+- System tray integration for minimal disruption
+- Easy-to-use interface with settings accessible via a context menu
+
+Battery Notifier is built using .NET 8 and leverages the NAudio library for audio playback, ensuring a smooth and reliable user experience.
 
 ## Installation
 
