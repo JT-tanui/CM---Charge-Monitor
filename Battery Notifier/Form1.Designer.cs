@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             notifyIcon1 = new NotifyIcon(components);
             numericUpDown1 = new NumericUpDown();
+            chkEnableNotifications = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
             SuspendLayout();
             // 
@@ -51,23 +52,38 @@
             numericUpDown1.TextAlign = HorizontalAlignment.Center;
             numericUpDown1.Value = new decimal(new int[] { 98, 0, 0, 0 });
             // 
+            // chkEnableNotifications
+            // 
+            chkEnableNotifications.AutoSize = true;
+            chkEnableNotifications.Checked = true;
+            chkEnableNotifications.CheckState = CheckState.Checked;
+            chkEnableNotifications.Location = new Point(343, 254);
+            chkEnableNotifications.Name = "chkEnableNotifications";
+            chkEnableNotifications.Size = new Size(156, 24);
+            chkEnableNotifications.TabIndex = 1;
+            chkEnableNotifications.Text = "Enable notification";
+            chkEnableNotifications.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(chkEnableNotifications);
             Controls.Add(numericUpDown1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             Text = "Battery Notifier";
-            Load += Form1_Load_1;
+            Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
         private NotifyIcon notifyIcon1;
         private NumericUpDown numericUpDown1;
+        private CheckBox chkEnableNotifications;
     }
 }
