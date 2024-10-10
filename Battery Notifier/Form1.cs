@@ -20,6 +20,8 @@ namespace Battery_Notifier
         bool notificationsEnabled = true;  // Global variable to track notification state
         ToolStripMenuItem enableNotificationsMenuItem;  // Reference to the context menu item
         IWavePlayer outputDevice;  // Reference to the audio output device
+        Form notificationForm;  // Custom form for notifications
+        string notificationSoundPath = @"C:\Users\HP\Documents\Android_dev\Sounds\hip_hop.mp3";  // Path to the notification sound
 
         public Form1()
         {
@@ -33,7 +35,7 @@ namespace Battery_Notifier
             {
                 this.Hide();
                 notifyIcon1.Visible = true;
-                notifyIcon1.ShowBalloonTip(1000, "Battery Notifier", "Running in the system tray.", ToolTipIcon.Info);
+                notifyIcon1.ShowBalloonTip(1000, "Battery Notifier", $"Running in the system tray.\nBattery Limit: {batteryThreshold}%\nNotification Sound: {System.IO.Path.GetFileName(notificationSoundPath)}", ToolTipIcon.Info);
             }
         }
 
@@ -100,6 +102,7 @@ namespace Battery_Notifier
             {
                 // Charger is unplugged, stop notifications and go dormant
                 StopCustomSound();
+                CloseNotificationForm();
                 this.Hide();
                 notifyIcon1.Visible = true;
             }
@@ -107,11 +110,39 @@ namespace Battery_Notifier
 
         private void NotifyUser()
         {
-            PlayCustomSound(@"C:\Users\HP\Documents\Android_dev\Sounds\hip_hop.mp3");
+            PlayCustomSound(notificationSoundPath);
 
-            // Show the message box and wait for the user to press "OK"
-            MessageBox.Show("Battery is at " + batteryThreshold + "%! Please unplug your charger.",
-                "Battery Notifier", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Show the custom notification form
+            notificationForm = new Form
+            {
+                Text = "Battery Notifier",
+                Size = new Size(300, 150),
+                StartPosition = FormStartPosition.CenterScreen,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            Label messageLabel = new Label
+            {
+                Text = $"Battery is at {batteryThreshold}%! Please unplug your charger.",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            Button okButton = new Button
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Dock = DockStyle.Bottom
+            };
+
+            okButton.Click += (s, e) => notificationForm.Close();
+
+            notificationForm.Controls.Add(messageLabel);
+            notificationForm.Controls.Add(okButton);
+
+            notificationForm.ShowDialog();
 
             // Stop the sound when the user presses "OK"
             StopCustomSound();
@@ -139,6 +170,15 @@ namespace Battery_Notifier
                 outputDevice.Stop();
                 outputDevice.Dispose();
                 outputDevice = null;
+            }
+        }
+
+        private void CloseNotificationForm()
+        {
+            if (notificationForm != null)
+            {
+                notificationForm.Close();
+                notificationForm = null;
             }
         }
 
@@ -210,6 +250,7 @@ namespace Battery_Notifier
                     // Charger is unplugged, stop notifications and go dormant
                     batteryCheckTimer.Stop();
                     StopCustomSound();
+                    CloseNotificationForm();
                     this.Hide();
                     notifyIcon1.Visible = true;
                 }
