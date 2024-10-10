@@ -21,13 +21,17 @@ namespace Battery_Notifier
         ToolStripMenuItem enableNotificationsMenuItem;  // Reference to the context menu item
         IWavePlayer outputDevice;  // Reference to the audio output device
         Form notificationForm;  // Custom form for notifications
-        string notificationSoundPath = @"C:\Users\HP\Documents\Android_dev\Sounds\hip_hop.mp3";  // Path to the notification sound
+        string notificationSoundPath;  // Path to the notification sound
 
         public Form1()
         {
             InitializeComponent();
             SystemEvents.PowerModeChanged += OnPowerModeChanged;  // Subscribe to power mode changes
+
+            // Set the notification sound path to the relative path
+            notificationSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hip_hop.mp3");
         }
+
 
         private void Form1_Resize(object sender, EventArgs e)
         {
@@ -47,7 +51,7 @@ namespace Battery_Notifier
 
             // Initialize the timer
             batteryCheckTimer = new System.Windows.Forms.Timer();
-            batteryCheckTimer.Interval = 20000; // 20 seconds
+            batteryCheckTimer.Interval = 30000; // 30 seconds
             batteryCheckTimer.Tick += BatteryCheckTimer_Tick;
             batteryCheckTimer.Start();
 
@@ -58,7 +62,7 @@ namespace Battery_Notifier
             // Set default numeric value for threshold
             numericUpDown1.Minimum = 1;
             numericUpDown1.Maximum = 100;
-            numericUpDown1.Value = 90;  // Set initial default value
+            numericUpDown1.Value = 94;  // Set initial default value
 
             // Set initial battery threshold
             batteryThreshold = (int)numericUpDown1.Value;
@@ -107,16 +111,18 @@ namespace Battery_Notifier
                 notifyIcon1.Visible = true;
             }
         }
-
         private void NotifyUser()
         {
+            // Close any existing notification form
+            CloseNotificationForm();
+
             PlayCustomSound(notificationSoundPath);
 
             // Show the custom notification form
             notificationForm = new Form
             {
                 Text = "Battery Notifier",
-                Size = new Size(300, 150),
+                Size = new Size(400, 250),
                 StartPosition = FormStartPosition.CenterScreen,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
@@ -142,11 +148,23 @@ namespace Battery_Notifier
             notificationForm.Controls.Add(messageLabel);
             notificationForm.Controls.Add(okButton);
 
+            // Create a timer to close the notification form after 20 seconds
+            var closeTimer = new System.Windows.Forms.Timer();
+            closeTimer.Interval = 20000; // 20 seconds
+            closeTimer.Tick += (s, e) =>
+            {
+                closeTimer.Stop();
+                notificationForm.Close();
+            };
+            closeTimer.Start();
+
             notificationForm.ShowDialog();
 
             // Stop the sound when the user presses "OK"
             StopCustomSound();
         }
+
+
 
         private void PlayCustomSound(string filePath)
         {
