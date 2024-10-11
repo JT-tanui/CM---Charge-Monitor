@@ -31,11 +31,11 @@ jobs:
         run: dotnet test --no-restore --verbosity normal
 
       - name: Publish app
-        run: dotnet publish -c Release -r win-x86 --self-contained --no-restore
+        run: dotnet publish -c Release -r win-x64 --self-contained --no-restore
 
       - name: Upload artifact (optional)
         uses: actions/upload-artifact@v3
         with:
           name: published-app
           path: |
-            **/bin/Release/net8.0/win-x86/publish/**  # Adjust this path if necessary
+            **/bin/Release/net8.0/win-x64/publish/**  # Adjust this path if necessary
