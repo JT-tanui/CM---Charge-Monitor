@@ -1244,6 +1244,15 @@
         L//////+//////+gAAAAAC///////v//////kAAAAABP//////7//////5AAAAAAD//////+
 </value>
   </data>
+  <data name="lblInstructions.Text" xml:space="preserve">
+    <value>                                Welcome to Battery Notifier!
+
+To add a ringtone, click the 'Add Ringtone' button.
+To change the notification sound, select a ringtone from the dropdown.
+To enable or disable notifications, use the checkbox.
+
+For support, contact: theviscars20@gmail.com</value>
+  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAEAf4AAAAAAIAAoBgEAFgAAACgAAAB/AAAAAAEAAAEAIAAAAAAAAP4AAI18AACNfAAAAAAAAAAA

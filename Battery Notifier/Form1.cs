@@ -22,16 +22,21 @@ namespace Battery_Notifier
         IWavePlayer outputDevice;  // Reference to the audio output device
         Form notificationForm;  // Custom form for notifications
         string notificationSoundPath;  // Path to the notification sound
+        string defaultNotificationSoundPath;  // Default notification sound path
 
         public Form1()
         {
             InitializeComponent();
             SystemEvents.PowerModeChanged += OnPowerModeChanged;  // Subscribe to power mode changes
 
-            // Set the notification sound path to the relative path
-            notificationSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hip_hop.mp3");
-        }
+            // Set the default notification sound path
+            defaultNotificationSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hip_hop.mp3");
+            notificationSoundPath = defaultNotificationSoundPath;
 
+            // Attach event handler for the Add Ringtone button
+            btnAddRingtone.Click += BtnAddRingtone_Click;
+
+        }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
@@ -40,6 +45,22 @@ namespace Battery_Notifier
                 this.Hide();
                 notifyIcon1.Visible = true;
                 notifyIcon1.ShowBalloonTip(1000, "Battery Notifier", $"Running in the system tray.\nBattery Limit: {batteryThreshold}%\nNotification Sound: {System.IO.Path.GetFileName(notificationSoundPath)}", ToolTipIcon.Info);
+            }
+        }
+
+        private void AddApplicationToStartup()
+        {
+            try
+            {
+                string appName = "BatteryNotifier";
+                string appPath = Application.ExecutablePath;
+
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+                registryKey.SetValue(appName, appPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding application to startup: " + ex.Message);
             }
         }
 
@@ -79,6 +100,127 @@ namespace Battery_Notifier
 
             // Create the context menu for NotifyIcon
             CreateContextMenu();
+
+            // Add application to startup
+            AddApplicationToStartup();
+
+
+            // Populate the ComboBox with available ringtones
+            PopulateRingtoneComboBox();
+
+            // Attach event handler for ComboBox selection change
+            comboBoxRingtones.SelectedIndexChanged += ComboBoxRingtones_SelectedIndexChanged;
+        }
+
+        private void BtnAddRingtone_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+                openFileDialog.Title = "Select a Ringtone";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFilePath = openFileDialog.FileName;
+                    string ringtonesFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ringtones");
+
+                    // Create the ringtones folder if it doesn't exist
+                    if (!System.IO.Directory.Exists(ringtonesFolder))
+                    {
+                        System.IO.Directory.CreateDirectory(ringtonesFolder);
+                    }
+
+                    // Copy the selected file to the ringtones folder
+                    string destinationFilePath = System.IO.Path.Combine(ringtonesFolder, System.IO.Path.GetFileName(selectedFilePath));
+                    System.IO.File.Copy(selectedFilePath, destinationFilePath, true);
+
+                    // Update the notification sound path
+                    notificationSoundPath = destinationFilePath;
+
+                    // Refresh the ComboBox
+                    PopulateRingtoneComboBox();
+
+                    // Set the selected item in the ComboBox
+                    comboBoxRingtones.SelectedItem = System.IO.Path.GetFileName(destinationFilePath);
+                }
+            }
+        }
+
+        private void PopulateRingtoneComboBox()
+        {
+            string ringtonesFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ringtones");
+
+            // Create the ringtones folder if it doesn't exist
+            if (!System.IO.Directory.Exists(ringtonesFolder))
+            {
+                System.IO.Directory.CreateDirectory(ringtonesFolder);
+            }
+
+            // Clear existing items
+            comboBoxRingtones.Items.Clear();
+
+            // Add available ringtones to the ComboBox
+            var ringtoneFiles = System.IO.Directory.GetFiles(ringtonesFolder, "*.mp3");
+            foreach (var ringtoneFile in ringtoneFiles)
+            {
+                comboBoxRingtones.Items.Add(System.IO.Path.GetFileName(ringtoneFile));
+            }
+
+            // Set the default selected item if available
+            if (comboBoxRingtones.Items.Count > 0)
+            {
+                comboBoxRingtones.SelectedItem = System.IO.Path.GetFileName(defaultNotificationSoundPath);
+            }
+        }
+
+        private void ComboBoxRingtones_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Get the selected ringtone
+            string selectedRingtone = comboBoxRingtones.SelectedItem.ToString();
+
+            // Update the notification sound path
+            notificationSoundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ringtones", selectedRingtone);
+
+            // Check if the file exists
+            if (!System.IO.File.Exists(notificationSoundPath))
+            {
+                MessageBox.Show("The specified ringtone file was not found. Using the default ringtone.");
+                notificationSoundPath = defaultNotificationSoundPath;
+            }
+        }
+
+        private void ChangeRingtoneMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+                openFileDialog.Title = "Select a Ringtone";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedFilePath = openFileDialog.FileName;
+                    string ringtonesFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ringtones");
+
+                    // Create the ringtones folder if it doesn't exist
+                    if (!System.IO.Directory.Exists(ringtonesFolder))
+                    {
+                        System.IO.Directory.CreateDirectory(ringtonesFolder);
+                    }
+
+                    // Copy the selected file to the ringtones folder
+                    string destinationFilePath = System.IO.Path.Combine(ringtonesFolder, System.IO.Path.GetFileName(selectedFilePath));
+                    System.IO.File.Copy(selectedFilePath, destinationFilePath, true);
+
+                    // Update the notification sound path
+                    notificationSoundPath = destinationFilePath;
+
+                    // Refresh the ComboBox
+                    PopulateRingtoneComboBox();
+
+                    // Set the selected item in the ComboBox
+                    comboBoxRingtones.SelectedItem = System.IO.Path.GetFileName(destinationFilePath);
+                }
+            }
         }
 
         private void NumericUpDown1_ValueChanged(object sender, EventArgs e)
@@ -111,6 +253,7 @@ namespace Battery_Notifier
                 notifyIcon1.Visible = true;
             }
         }
+
         private void NotifyUser()
         {
             // Close any existing notification form
@@ -154,7 +297,10 @@ namespace Battery_Notifier
             closeTimer.Tick += (s, e) =>
             {
                 closeTimer.Stop();
-                notificationForm.Close();
+                if (notificationForm != null)
+                {
+                    notificationForm.Close();
+                }
             };
             closeTimer.Start();
 
@@ -164,12 +310,16 @@ namespace Battery_Notifier
             StopCustomSound();
         }
 
-
-
         private void PlayCustomSound(string filePath)
         {
             try
             {
+                if (!System.IO.File.Exists(filePath))
+                {
+                    MessageBox.Show("The specified ringtone file was not found. Using the default ringtone.");
+                    filePath = defaultNotificationSoundPath;
+                }
+
                 var audioFile = new AudioFileReader(filePath);
                 outputDevice = new WaveOutEvent();
                 outputDevice.Init(audioFile);
@@ -215,6 +365,10 @@ namespace Battery_Notifier
             enableNotificationsMenuItem.CheckOnClick = true;
             enableNotificationsMenuItem.CheckedChanged += EnableNotificationsMenuItem_CheckedChanged;
 
+            // "Change Ringtone" menu item to change the ringtone
+            ToolStripMenuItem changeRingtoneMenuItem = new ToolStripMenuItem("Change Ringtone");
+            changeRingtoneMenuItem.Click += ChangeRingtoneMenuItem_Click;
+
             // "Exit" menu item to close the app
             ToolStripMenuItem exitMenuItem = new ToolStripMenuItem("Exit");
             exitMenuItem.Click += ExitMenuItem_Click;
@@ -222,11 +376,26 @@ namespace Battery_Notifier
             // Add items to context menu
             contextMenu.Items.Add(settingsMenuItem);
             contextMenu.Items.Add(enableNotificationsMenuItem);
+            contextMenu.Items.Add(changeRingtoneMenuItem);
             contextMenu.Items.Add(exitMenuItem);
 
             // Assign context menu to NotifyIcon
             notifyIcon1.ContextMenuStrip = contextMenu;
         }
+
+        //private void ChangeRingtoneMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    using (OpenFileDialog openFileDialog = new OpenFileDialog())
+        //    {
+        //        openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+        //        openFileDialog.Title = "Select a Ringtone";
+
+        //        if (openFileDialog.ShowDialog() == DialogResult.OK)
+        //        {
+        //            notificationSoundPath = openFileDialog.FileName;
+        //        }
+        //    }
+        //}
 
         private void SettingsMenuItem_Click(object sender, EventArgs e)
         {
@@ -273,6 +442,11 @@ namespace Battery_Notifier
                     notifyIcon1.Visible = true;
                 }
             }
+        }
+
+        private void comboBoxRingtones_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+
         }
     }
 }
